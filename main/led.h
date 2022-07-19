@@ -12,6 +12,7 @@ typedef enum {
 } led_indicate_t;
 
 void led_init(void);
+void led_setDuty(uint8_t duty);
 void led_red_on(void);
 void led_grn_on(void);
 void led_off(void);

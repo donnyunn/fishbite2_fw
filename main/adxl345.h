@@ -98,6 +98,7 @@ typedef enum {
 } adxl_evt_t;
 
 bool adxl345_knock(void);
+void adxl345_setThreshold(uint8_t val);
 void adxl345_init(void);
 void i2c_init(void);
 void adxl345_test(void);

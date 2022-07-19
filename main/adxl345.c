@@ -36,6 +36,8 @@ double gains[3];				// Counts to Gs
 #define ADXL345_TO_READ (6)      // Number of Bytes Read - Two Bytes Per Axis
 uint8_t _buff[ADXL345_TO_READ];		//	6 Bytes Buffer
 
+static uint8_t _threshold = 32;
+
 void ADXL_ISR();
 void powerOn();
 void readAccel(int* x, int* y, int* z);
@@ -290,6 +292,14 @@ bool adxl345_knock(void)
 	return (_val == 0xE5);
 }
 
+void adxl345_setThreshold(uint8_t val)
+{
+	_threshold = val;
+    setActivityThreshold(_threshold);
+    setInactivityThreshold(_threshold);
+    setTapThreshold(_threshold);
+}
+
 void adxl345_init(void)
 {
     adxl_evt_queue = xQueueCreate(10, sizeof(uint32_t));
@@ -308,15 +318,15 @@ void adxl345_init(void)
     set_bw(ADXL345_LOW_POWER | ADXL345_BW_12_5);
 
     setActivityXYZ(1, 1, 1);
-    setActivityThreshold(32);
+    setActivityThreshold(_threshold);
 
     setInactivityXYZ(1, 1, 1);
-    setInactivityThreshold(32);
+    setInactivityThreshold(_threshold);
     setTimeInactivity(2);
 
     setTapDetectionOnXYZ(1, 1, 1);
 
-    setTapThreshold(32);
+    setTapThreshold(_threshold);
     setTapDuration(15);
     setDoubleTapLatency(80);
     setDoubleTapWindow(200);

@@ -5,27 +5,25 @@ bool f_blepairing = false;
 
 void onSensitivityChanged(uint8_t value)
 {
-    if (value <= 0)
-    {
-        value = 1;
-    }
-
-    //fbd_sensitivity((double)value * 0.01);
+    uint8_t threshold;
     
-    ESP_LOGI(TAG, "Sensitivity: %d", value);
+    if (value < 15) threshold = 30;
+    else if (value < 30) threshold = 60;
+    else threshold = 250;
+    
+    ESP_LOGI(TAG, "Sensitivity: %d", threshold);
+
+    adxl345_setThreshold(threshold);
 }
 
 void onBrightnessChanged(uint8_t value)
 {
-    if (value <= 0){
-        value = 0;
-    }   
-    if (value > 100){
-        value = 100;
-    }
+    uint8_t brightness;
+    brightness = (uint8_t)(255 - value * 255 / 100);
 
-    ESP_LOGI(TAG, "Brightness: %d", value);
-    //led_set_brightness((double)value);
+    ESP_LOGI(TAG, "Brightness: %d", brightness);
+
+    led_setDuty(brightness);
 }
 
 void nvs_init(void)
@@ -53,9 +51,9 @@ void app_main(void)
     while (isPushedPwrbtn()) {
         vTaskDelay(100 / portTICK_PERIOD_MS);
         cnt_btn++;
-        if (cnt_btn > 30) break;
+        if (cnt_btn > 20) break;
     }
-    if (cnt_btn <= 30) {
+    if (cnt_btn <= 20) {
         adxl345_sleep();
         deepSleep();
     }
@@ -70,7 +68,7 @@ void app_main(void)
     while (isPushedPwrbtn()) {
         vTaskDelay(100 / portTICK_PERIOD_MS);
         cnt_btn++;
-        if (cnt_btn > 30) {
+        if (cnt_btn > 20) {
             led_advertising();
 
             // wait for btn released
@@ -116,7 +114,7 @@ void app_main(void)
         while (isPushedPwrbtn()) {
             vTaskDelay(100 / portTICK_PERIOD_MS);
             cnt_btn++;
-            if (cnt_btn > 30) {
+            if (cnt_btn > 20) {
                 led_indicate_poweroff();
                 adxl345_sleep();
                 // wait for release

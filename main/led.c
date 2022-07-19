@@ -11,7 +11,8 @@
 #define LEDC_TEST_FADE_TIME    (3000)
 
 static led_indicate_t _state = LED_STANDBY;
-static uint8_t _duty = 0;
+static led_indicate_t _stateBkup;
+static uint8_t _duty = 128;
 
 static void led_task(void *arg)
 {
@@ -27,6 +28,7 @@ static void led_task(void *arg)
                 ledc_set_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL, LEDC_OFF_DUTY);
                 ledc_update_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL);
 
+                _stateBkup = _state;
                 _state = LED_STANDBY;
                 break;
             case LED_RED_ON:
@@ -37,6 +39,7 @@ static void led_task(void *arg)
                 ledc_set_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL, _duty);
                 ledc_update_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL);
                 
+                _stateBkup = _state;
                 _state = LED_STANDBY;
                 break;
             case LED_GREEN_ON:
@@ -47,6 +50,7 @@ static void led_task(void *arg)
                 ledc_set_duty(LEDC_LS_MODE, LEDC_LS_CH1_CHANNEL, _duty);
                 ledc_update_duty(LEDC_LS_MODE, LEDC_LS_CH1_CHANNEL);
 
+                _stateBkup = _state;
                 _state = LED_STANDBY;
                 break;
             case LED_ADVERTISING:
@@ -130,6 +134,7 @@ void led_init(void)
 void led_setDuty(uint8_t duty)
 {
     _duty = duty;
+    _state = _stateBkup;
 }
 
 void led_red_on(void)
@@ -155,7 +160,8 @@ void led_advertising(void)
 void led_indicate_poweron(void)
 {
     led_off();
-    while (_state != LED_STANDBY);
+    //while (_state != LED_STANDBY);
+    vTaskDelay(pdMS_TO_TICKS(100));
     // red fade-in
     ledc_set_fade_with_time(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL, 0, 1500);
     ledc_fade_start(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL, LEDC_FADE_NO_WAIT);
@@ -164,7 +170,8 @@ void led_indicate_poweron(void)
 void led_indicate_poweroff(void)
 {
     led_grn_on();
-    while (_state != LED_STANDBY);
+    //while (_state != LED_STANDBY);
+    vTaskDelay(pdMS_TO_TICKS(100));
     // green fade-out
     ledc_set_fade_with_time(LEDC_LS_MODE, LEDC_LS_CH1_CHANNEL, LEDC_OFF_DUTY, 1000);
     ledc_fade_start(LEDC_LS_MODE, LEDC_LS_CH1_CHANNEL, LEDC_FADE_WAIT_DONE);
